@@ -1,6 +1,8 @@
 ## Установка
 
 ```bash
+git clone https://github.com/PetkaKahin/Test_task_4.git
+cd ./Test_task_4
 composer install
 cp .env.example .env
 php artisan key:generate

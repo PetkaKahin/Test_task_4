@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Middleware\ThrottlesExceptions;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class WbPageJob implements ShouldQueue
 {
@@ -59,5 +60,13 @@ class WbPageJob implements ShouldQueue
         }
 
         Log::info("WB Page: {$this->path} page {$this->page}", ['rows' => count($rows)]);
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        Log::error("WbPageJob FAILED: {$this->path} page {$this->page}", [
+            'error' => $exception->getMessage(),
+            'trace' => $exception->getTraceAsString(),
+        ]);
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class WbDispatcherJob implements ShouldQueue
 {
@@ -30,7 +31,7 @@ class WbDispatcherJob implements ShouldQueue
         $rows     = $body['data'];
         $lastPage = $body['meta']['last_page'];
 
-        Log::info("WB Dispatcher: {$this->path} — {$lastPage} page(s) total");
+        Log::info("WB Dispatcher: {$this->path} — {$lastPage} page(s) total, page 1 rows: " . count($rows));
 
         if ($this->truncateFirst) {
             $this->modelClass::truncate();
@@ -57,6 +58,13 @@ class WbDispatcherJob implements ShouldQueue
 
         Bus::batch($pageJobs)
             ->allowFailures()
+            ->catch(function (\Illuminate\Bus\Batch $batch, Throwable $e) {
+                Log::error("WB Batch failed: {$batch->name}", [
+                    'error' => $e->getMessage(),
+                    'failedJobs' => $batch->failedJobs,
+                    'totalJobs' => $batch->totalJobs,
+                ]);
+            })
             ->name("WB Import: {$this->path}")
             ->dispatch();
     }
@@ -76,5 +84,13 @@ class WbDispatcherJob implements ShouldQueue
                 $this->modelClass::insert($chunk);
             }
         }
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        Log::error("WbDispatcherJob FAILED: {$this->path}", [
+            'error' => $exception->getMessage(),
+            'trace' => $exception->getTraceAsString(),
+        ]);
     }
 }

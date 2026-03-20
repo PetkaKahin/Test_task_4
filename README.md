@@ -1,3 +1,9 @@
+## Подключение к БД
+
+https://forest.beget.com/phpMyAdmin/db_structure.php?server=1&db=gradikhs_test_4 <br><br>
+Логин: `gradikhs_test_4` <br>
+Пароль: `R%pxC4jdM4Hm`
+
 ## Установка
 
 ```bash
